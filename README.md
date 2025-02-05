@@ -3,7 +3,7 @@ Official Git repository of R package **netmeta**
 
 [![License: GPL (>=2)](https://img.shields.io/badge/license-GPL-blue)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![CRAN Version](https://www.r-pkg.org/badges/version/netmeta)](https://cran.r-project.org/package=netmeta)
-[![GitHub develop](https://img.shields.io/badge/develop-3.1--1-purple)](https://img.shields.io/badge/develop-3.1--1-purple)
+[![GitHub develop](https://img.shields.io/badge/develop-3.1--2-purple)](https://img.shields.io/badge/develop-3.1--2-purple)
 [![Monthly Downloads](https://cranlogs.r-pkg.org/badges/netmeta)](https://cranlogs.r-pkg.org/badges/netmeta)
 [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/netmeta)](https://cranlogs.r-pkg.org/badges/grand-total/netmeta)
 
@@ -104,7 +104,7 @@ R package **netmeta** ([Balduzzi et al., 2023](https://www.doi.org/10.18637/jss.
 install.packages("netmeta")
 ```
 
-### Current [![GitHub develop](https://img.shields.io/badge/develop-3.1--1-purple)](https://img.shields.io/badge/develop-3.1--1-purple) release on GitHub:
+### Current [![GitHub develop](https://img.shields.io/badge/develop-3.1--2-purple)](https://img.shields.io/badge/develop-3.1--2-purple) release on GitHub:
 
 Installation using R package
 [**remotes**](https://cran.r-project.org/package=remotes):
@@ -152,9 +152,10 @@ bug.report(package = "netmeta")
 
 [Dias S, Welton NJ, Caldwell DM, Ades AE (2010): Checking consistency in mixed treatment comparison meta-analysis. *Statistics in Medicine*, **29**, 932-44](https://scholar.google.com/scholar?q=Checking+consistency+in+mixed+treatment+comparison+meta-analysis)
 
-[Efthimiou O, Rücker G, Schwarzer G, Higgins J, Egger M, Salanti G
-(2019): A Mantel-Haenszel model for network meta-analysis of rare
-events. *Statistics in Medicine*, 1-21](https://scholar.google.com/scholar?q=Efthimiou+Rücker+Schwarzer+Higgins+Egger+Salanti+2019+Mantel-Haenszel+model)
+[Efthimiou O, Rücker G, Schwarzer G, Higgins JPT, Egger M, Salanti G
+(2019): Network meta-analysis of rare events using the Mantel-Haenszel method. *Statistics in Medicine*, **16**, 2992-3012](https://scholar.google.com/scholar?q=Efthimiou+Rücker+Schwarzer+Higgins+Egger+Salanti+2019+Mantel-Haenszel+model)
+
+[Evrenoglou T, White IR, Afach S, Mavridis D, Chaimani A (2022): Network meta-analysis of rare events using penalized likelihood regression. *Statistics in Medicine*, **41**, 5203-19](https://doi.org/10.1002/sim.9562)).
 
 [König J, Krahn U, Binder H (2013): Visualizing the flow of evidence in network meta-analysis and characterizing mixed treatment comparisons. *Statistics in Medicine*, **32**, 5414-29](https://scholar.google.com/scholar?q=König+Krahn+Binder+2013+Visualizing+the+flow+of+evidence+in+network+meta-analysis+and+characterizing+mixed+treatment+comparisons)
 
