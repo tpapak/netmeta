@@ -235,11 +235,10 @@
 #' po.nets$P.random
 #' 
 #' \dontrun{
-#' if (requireNamespace("Rgraphviz", quietly = TRUE)) {
 #' # Hasse diagram for all outcomes (random effects model)
 #' #
-#' hasse(po.ranks)
-#' }
+#' if (requireNamespace("Rgraphviz", quietly = TRUE))
+#'   hasse(po.ranks)
 #' }
 #' 
 #' # Hasse diagram for outcomes early response and early remission
@@ -247,7 +246,8 @@
 #' po12 <- netposet(netrank(net1), netrank(net2),
 #'   outcomes = outcomes[1:2])
 #' \dontrun{
-#' hasse(po12)
+#' if (requireNamespace("Rgraphviz", quietly = TRUE))
+#'   hasse(po12)
 #' }
 #' 
 #' # Scatter plot

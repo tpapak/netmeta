@@ -1,3 +1,10 @@
+## netmeta, version 3.1-2 (2025-mm-dd)
+
+### Major changes
+
+* Add R package **crossnma** to Suggests
+
+
 ## netmeta, version 3.1-1 (2025-02-05)
 
 ### Major changes
