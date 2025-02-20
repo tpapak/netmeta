@@ -560,9 +560,7 @@ netmetabin <- function(event1, n1, event2, n2,
   #
   avail.reference.group.pairwise <- FALSE
   #
-  if (is.data.frame(event1)  &&
-      (!is.null(attr(event1, "pairwise")) ||
-       inherits(event1, "pairwise"))) {
+  if (inherits(event1, "pairwise")) {
     is.pairwise <- TRUE
     ##
     if (missing.incr)
@@ -2373,14 +2371,11 @@ netmetabin <- function(event1, n1, event2, n2,
   ##
   ## Study overview
   ##
-  p0 <- prepare(rep(1, nrow(dat.wide)),
-                rep(1, nrow(dat.wide)),
-                dat.wide$treat1,
-                dat.wide$treat2,
-                dat.wide$studlab,
-                func.inverse = func.inverse)
+  p0 <- prepare(rep(1, nrow(dat.wide)), rep(1, nrow(dat.wide)),
+                 dat.wide$treat1, dat.wide$treat2, dat.wide$studlab,
+                 func.inverse = func.inverse)
   ##
-  tdata <- data.frame(studies = p0$studlab, narms = p0$narms,
+  tdata <- data.frame(studies = p0$data$studlab, narms = p0$data$narms,
                       stringsAsFactors = FALSE)
   ##
   tdata <- tdata[!duplicated(tdata[, c("studies", "narms")]), , drop = FALSE]

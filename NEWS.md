@@ -4,6 +4,23 @@
 
 * Add R package **crossnma** to Suggests
 
+### User-visible changes
+
+* print.netcomb():
+  - do not print empty lines for missing heterogeneity statistics in
+    disconnected networks
+
+### Internal changes
+
+* Rename internal function prepare2() to prepare(), after removing the old
+  function prepare()
+
+* netcomb(), discomb(), netmetabin():
+  - use new internal function prepare()
+
+* netcomb(), discomb():
+  - use same order as well as row and column names for hat matrices as netmeta()
+
 
 ## netmeta, version 3.1-1 (2025-02-05)
 

@@ -1234,8 +1234,9 @@ netmeta <- function(TE, seTE,
   # Calculate weight matrix and generate ordered dataset, with added numbers
   # of arms per study
   #
-  p0 <- prepare2(TE, seTE, treat1, treat2, studlab, correlated = correlated,
-                 func.inverse = func.inverse)
+  p0 <- prepare(TE, seTE, treat1, treat2, studlab,
+                correlated = correlated,
+                func.inverse = func.inverse)
   #
   W.matrix.common <- p0$W
   dat.c <- p0$data
@@ -1410,8 +1411,9 @@ netmeta <- function(TE, seTE,
   else
     tau <- tau.preset
   #
-  p1 <- prepare2(TE, seTE, treat1, treat2, studlab, tau, correlated,
-                 func.inverse)
+  p1 <- prepare(TE, seTE, treat1, treat2, studlab,
+                tau = tau, correlated = correlated,
+                func.inverse = func.inverse)
   #
   W.matrix.random <- p1$W
   dat.r <- p1$data

@@ -629,28 +629,46 @@ print.netcomb <- function(x,
         if (print.tau2 | print.tau | print.I2)
           cat("\n")
         #
-        cat("Heterogeneity statistics:\n")
-        #
-        hetdat <- 
-          data.frame(Q = formatN(c(x$Q.additive,
-                                   x$Q.standard,
-                                   x$Q.diff),
-                                 digits.Q),
-                     df.Q = formatN(c(x$df.Q.additive,
-                                      x$df.Q.standard,
-                                      x$df.Q.diff), 0),
-                     pval = formatPT(c(x$pval.Q.additive,
-                                       x$pval.Q.standard,
-                                       x$pval.Q.diff),
-                                     digits = digits.pval.Q,
-                                     scientific = scientific.pval,
-                                     zero = zero.pval, JAMA = JAMA.pval),
-                     row.names = c("Additive model", "Standard model",
-                                   "Difference"))
-        #
-        names(hetdat) <- c("Q", "df", "p-value")
-        #
-        print(hetdat)
+        if (inherits(x, "discomb") && x$s > 1) {
+          cat("Heterogeneity statistic:\n")
+          #
+          hetdat <- 
+            data.frame(Q = formatN(x$Q.additive, digits.Q),
+                       df.Q = formatN(x$df.Q.additive, 0),
+                       pval = formatPT(x$pval.Q.additive,
+                                       digits = digits.pval.Q,
+                                       scientific = scientific.pval,
+                                       zero = zero.pval, JAMA = JAMA.pval),
+                       row.names = "")
+          #
+          names(hetdat) <- c("Q", "df", "p-value")
+          #
+          print(hetdat)
+        }
+        else {
+          cat("Heterogeneity statistics:\n")
+          #
+          hetdat <- 
+            data.frame(Q = formatN(c(x$Q.additive,
+                                     x$Q.standard,
+                                     x$Q.diff),
+                                   digits.Q),
+                       df.Q = formatN(c(x$df.Q.additive,
+                                        x$df.Q.standard,
+                                        x$df.Q.diff), 0),
+                       pval = formatPT(c(x$pval.Q.additive,
+                                         x$pval.Q.standard,
+                                         x$pval.Q.diff),
+                                       digits = digits.pval.Q,
+                                       scientific = scientific.pval,
+                                       zero = zero.pval, JAMA = JAMA.pval),
+                       row.names = c("Additive model", "Standard model",
+                                     "Difference"))
+          #
+          names(hetdat) <- c("Q", "df", "p-value")
+          #
+          print(hetdat)
+        }
       }
     }
     #
