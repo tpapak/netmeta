@@ -1,8 +1,17 @@
-## netmeta, version 3.1-2 (2025-mm-dd)
+## netmeta, version 3.2-0 (2025-mm-dd)
 
 ### Major changes
 
+* New R function netmetareg() to conduct network meta-regression with a
+  single continuous or binary covariate
+
 * Add R package **crossnma** to Suggests
+
+### Bug fixes
+
+* netmeta():
+  - incorrect between-study variance was calculated in datasets with
+    multi-arm studies when pairwise comparisons were not grouped together
 
 ### User-visible changes
 

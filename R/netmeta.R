@@ -1312,8 +1312,12 @@ netmeta <- function(TE, seTE,
         dat.tau$time2 <- time2
       }
       #
-      #dat.tau <- dat.tau[order(dat.tau$studlab,
-      #                         dat.tau$treat1, dat.tau$treat2), , drop = FALSE]
+      .order <- NULL
+      dat.tau$.order <- seq_len(nrow(dat.tau))
+      #
+      dat.tau <-
+        dat.tau[order(dat.tau$studlab,
+                      dat.tau$treat1, dat.tau$treat2), , drop = FALSE]
       #
       keep <- logical(0)
       wo <- logical(0)
@@ -1367,8 +1371,6 @@ netmeta <- function(TE, seTE,
       newnames <- paste0("V", seq_len(ncols2 - ncols1))
       names(dat.tau)[(ncols1 + 1):ncols2] <- newnames
       #
-      dat.tau <- dat.tau[order(dat.tau$studlab), ]
-      #
       trts.tau <- newnames[-length(newnames)]
       #
       formula.trts <-
@@ -1385,6 +1387,8 @@ netmeta <- function(TE, seTE,
       #
       dat.tau.TE <- dat.tau$TE
       dat.tau$comparison <- paste(dat.tau$treat1, dat.tau$treat2, sep = " vs ")
+      #
+      dat.tau %<>% relocate(.order, .after = last_col())
       #
       if (length(dat.tau.TE) == 1) {
         rma1 <- runNN(rma.uni,

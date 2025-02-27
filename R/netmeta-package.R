@@ -248,7 +248,7 @@
 #'
 #' @importFrom stats as.formula dist hclust optim optimize pchisq
 #'   prcomp relevel reshape rnorm sd coef glm binomial vcov update fitted
-#'   residuals quantile
+#'   residuals quantile setNames
 #'   
 #' @importFrom methods as
 #'
@@ -280,7 +280,7 @@
 #'   grid.roundrect grid.text grob popViewport pushViewport stringWidth
 #'   unit viewport
 #' 
-#' @importFrom dplyr %>% filter select rename starts_with
+#' @importFrom dplyr %>% filter select rename starts_with relocate last_col
 #' 
 #' @importFrom magrittr %<>%
 
