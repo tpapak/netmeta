@@ -10,8 +10,9 @@
 ### Bug fixes
 
 * netmeta():
-  - incorrect between-study variance was calculated in datasets with
-    multi-arm studies when pairwise comparisons were not grouped together
+  - an incorrect between-study variance was computed for the REML or ML
+    method in datasets with multi-arm studies when pairwise comparisons
+    were not properly grouped
 
 ### User-visible changes
 
