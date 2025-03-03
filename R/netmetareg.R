@@ -166,8 +166,8 @@ netmetareg.netmeta <- function(x, covar = NULL,
          "class 'factor' with more than two categories.",
          call. = FALSE)
   #
-  if (is.logical(covar))
-    covar <- as.numeric(covar)
+  # if (is.logical(covar)) # deprecated because model matrix is now constructed manually
+  #  covar <- as.numeric(covar)
   #
   dat[[covar.name]] <- covar
   #
@@ -253,19 +253,29 @@ netmetareg.netmeta <- function(x, covar = NULL,
   #
   V <- bldiag(lapply(split(dat, dat$studlab), calcV, sm = sm))
   #
-  # The way it is currently defined, rma.mv() constructs the
-  # interactions. We cannot control which covariate level is used as
-  # the reference for a factor variable.
-  #
+  
   if (consistency) {
     if (assumption == "independent") {
-      formula.nmr <-
+      formula.nmr_default <- # renamed for construction of manual matrix below
         as.formula(paste("~ 0 + ",
                          paste(trts, collapse = " + "),
                          if (!is.null(covar))
                            paste0( " + ",
                              paste(paste0(trts, ":", covar.name),
                                  collapse = " + "))))
+		man_matrix<-model.matrix(formula.nmr_default, data=dat) # the default model matrix
+      if(is.factor(covar)){# check type so that we know how to handle the specific model matrix
+        man_matrix<-man_matrix[,grepl(paste(min(levels(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # drop interactions which contain the reference covariate level if covariate is factor, character, logical
+      } else if(is.character(covar)){ 
+        man_matrix<-man_matrix[,grepl(paste(min(covar),"$", sep=""), colnames(man_matrix))==FALSE] 
+      } else if(is.logical(covar)){
+        man_matrix<-man_matrix[,grepl(paste(as.logical(min(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # 
+      }
+      dat[colnames(man_matrix)]<-man_matrix ## update model matrix columns
+      formula.nmr<- as.formula(paste("~ 0 ",
+                                       paste0( " + ",paste("`",colnames(man_matrix),"`",sep="", ## the back ticks are necessary if the covariate levels/values contains spaces or special characters
+                                                     collapse = " + "))
+                                     ))
     }
     else {
       #
@@ -278,13 +288,26 @@ netmetareg.netmeta <- function(x, covar = NULL,
       #
       dat$nonref <- as.numeric(dat[[reference.group]] != 0)
       #
-      formula.nmr <-
+      formula.nmr_default <- # renamed for construction of manual matrix below
         as.formula(paste("~ 0 + ",
                          paste(trts, collapse = " + "),
                          if (!is.null(covar))
                            paste0( " + ",
                                    paste(paste0("nonref:", covar.name),
                                          collapse = " + "))))
+	man_matrix<-model.matrix(formula.nmr_default, data=dat) # the default model matrix
+      if(is.factor(covar)){ # same logic as independent
+        man_matrix<-man_matrix[,grepl(paste(min(levels(covar)),"$", sep=""), colnames(man_matrix))==FALSE]
+      } else if(is.character(covar)){
+        man_matrix<-man_matrix[,grepl(paste(min(covar),"$", sep=""), colnames(man_matrix))==FALSE]
+      } else if(is.logical(covar)){ 
+        man_matrix<-man_matrix[,grepl(paste(as.logical(min(covar)),"$", sep=""), colnames(man_matrix))==FALSE]
+      }
+      dat[colnames(man_matrix)]<-man_matrix
+      formula.nmr<- as.formula(paste("~ 0 ",
+                                     paste0( " + ",paste("`",colnames(man_matrix),"`",sep="", 
+                                                         collapse = " + "))
+      ))
     }
   }
   else {
@@ -328,7 +351,7 @@ netmetareg.netmeta <- function(x, covar = NULL,
                        method.tau = method.tau,
                        level = level,
                        reference.group = reference.group,
-                       trts = trts,
+                       trts = ..x$trts,  # keep the long name of the treatment
                        trts.abbr = trts.abbr,
                        nchar.trts = nchar.trts,
                        dots = list(...),
@@ -401,15 +424,15 @@ print.netmetareg <- function(x,
   #
   lower <- NULL
   #
-  if (is.factor(covar))
-    dat <- x$results[ , c(if (assumption == "independent") "cov_lvl",
-                          if (assumption == "independent") "cov_ref",
-                         "est", if (print.se) "se",
-                         "lower", "upper", "z", "pval")]
-  else
+  if (is.numeric(covar)|is.integer(covar)) # update print output for as_df
     dat <- x$results[ , c("est", if (print.se) "se",
-                         "lower", "upper", "z", "pval")]
-  #
+                          "lower", "upper", "z", "pval")]
+  else
+    dat <- x$results[ , c("cov_lvl", # we need the covariate level for all assumptions if the covariate is not continuous. theoretically, we might not need them for logical vectors, because logical vectors can be coerced to continuous
+                          "cov_ref",
+                          "est", if (print.se) "se",
+                          "lower", "upper", "z", "pval")]
+    #
   dat$est <- formatN(dat$est, digits = digits)
   if (print.se)
   dat$se <- formatN(dat$se, digits = digits.se, ...)
