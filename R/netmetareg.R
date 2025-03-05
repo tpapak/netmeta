@@ -171,7 +171,7 @@ netmetareg.netmeta <- function(x, covar = NULL,
   #
   dat[[covar.name]] <- covar
   #
-  if (!is.null(x$data$.n1) & !is.null(x$data$.n2)) {
+  if (!is.null(x$data$.n1) & !is.null(x$data$.n2)) { #netmeta is not exporting n1 and n2 for ORs
     dat$n1 <- x$data$.n1
     dat$n2 <- x$data$.n2
   }
@@ -189,6 +189,23 @@ netmetareg.netmeta <- function(x, covar = NULL,
   if (!is.null(x$data$.time1) & !is.null(x$data$.time2)) {
     dat$time1 <- x$data$.time1
     dat$time2 <- x$data$.time2
+  }
+
+  # the logic above does not work because the following variables do not have .variable equivalents exported from netmeta. They are needed for the calcV function
+  if (!is.null(x$data$event1) & !is.null(x$data$event2)) {
+    dat$event1 <- ifelse(x$data$treat1==x$data$.treat1, x$data$event1, x$data$event2)
+    dat$event2 <- ifelse(x$data$treat2==x$data$.treat2, x$data$event2, x$data$event1)
+  }
+  if (!is.null(x$data$p1) & !is.null(x$data$p2)) {
+    dat$p1 <- ifelse(x$data$treat1==x$data$.treat1, x$data$p1, x$data$p2)
+    dat$p2 <- ifelse(x$data$treat2==x$data$.treat2, x$data$p2, x$data$p1)
+  }
+  if (!is.null(x$data$n1) & !is.null(x$data$n2)) {
+    dat$n1 <- ifelse(x$data$treat1==x$data$.treat1, x$data$n1, x$data$n2)
+    dat$n2 <- ifelse(x$data$treat2==x$data$.treat2, x$data$n2, x$data$n1)
+  }
+  if (!is.null(x$data$incr)) {
+    dat$incr <- x$data$incr
   }
   #
   dat <- dat[order(dat$studlab, dat$treat1, dat$treat2), , drop = FALSE]
@@ -229,7 +246,7 @@ netmetareg.netmeta <- function(x, covar = NULL,
     dat$n2[wo] <- dat$n1[wo]
     dat$mean2[wo] <- dat$mean1[wo]
     dat$sd2[wo] <- dat$sd1[wo]
-    dat$time2[wo] <- dat$time2[wo]
+    dat$time2[wo] <- dat$time1[wo]
     #
     dat$treat1[wo] <- t2.i[wo]
     dat$event1[wo] <- e2.i[wo]
@@ -252,6 +269,7 @@ netmetareg.netmeta <- function(x, covar = NULL,
   # Calculate Variance-Covariance matrix
   #
   V <- bldiag(lapply(split(dat, dat$studlab), calcV, sm = sm))
+  
   #
   
   if (consistency) {
@@ -263,21 +281,7 @@ netmetareg.netmeta <- function(x, covar = NULL,
                            paste0( " + ",
                              paste(paste0(trts, ":", covar.name),
                                  collapse = " + "))))
-		man_matrix<-model.matrix(formula.nmr_default, data=dat) # the default model matrix
-      if(is.factor(covar)){# check type so that we know how to handle the specific model matrix
-        man_matrix<-man_matrix[,grepl(paste(min(levels(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # drop interactions which contain the reference covariate level if covariate is factor, character, logical
-      } else if(is.character(covar)){ 
-        man_matrix<-man_matrix[,grepl(paste(min(covar),"$", sep=""), colnames(man_matrix))==FALSE] 
-      } else if(is.logical(covar)){
-        man_matrix<-man_matrix[,grepl(paste(as.logical(min(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # 
-      }
-      dat[colnames(man_matrix)]<-man_matrix ## update model matrix columns
-      formula.nmr<- as.formula(paste("~ 0 ",
-                                       paste0( " + ",paste("`",colnames(man_matrix),"`",sep="", ## the back ticks are necessary if the covariate levels/values contains spaces or special characters
-                                                     collapse = " + "))
-                                     ))
-    }
-    else {
+    } else {
       #
       # The interaction is all non-reference treatments vs reference,
       # so we can define a variable indicating whether it is reference
@@ -295,25 +299,26 @@ netmetareg.netmeta <- function(x, covar = NULL,
                            paste0( " + ",
                                    paste(paste0("nonref:", covar.name),
                                          collapse = " + "))))
-	man_matrix<-model.matrix(formula.nmr_default, data=dat) # the default model matrix
-      if(is.factor(covar)){ # same logic as independent
-        man_matrix<-man_matrix[,grepl(paste(min(levels(covar)),"$", sep=""), colnames(man_matrix))==FALSE]
-      } else if(is.character(covar)){
-        man_matrix<-man_matrix[,grepl(paste(min(covar),"$", sep=""), colnames(man_matrix))==FALSE]
-      } else if(is.logical(covar)){ 
-        man_matrix<-man_matrix[,grepl(paste(as.logical(min(covar)),"$", sep=""), colnames(man_matrix))==FALSE]
-      }
-      dat[colnames(man_matrix)]<-man_matrix
-      formula.nmr<- as.formula(paste("~ 0 ",
-                                     paste0( " + ",paste("`",colnames(man_matrix),"`",sep="", 
-                                                         collapse = " + "))
-      ))
     }
   }
   else {
     warning("Inconsistency models not yet implemented.")
     return(NULL)
   }
+  
+  # checks for non-continuous covariates
+  man_matrix<-model.matrix(formula.nmr_default, data=dat) # the default model matrix
+  if(is.factor(covar)){# check type so that we know how to handle the specific model matrix
+    man_matrix<-man_matrix[,grepl(paste(min(levels(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # drop interactions which contain the reference covariate level if covariate is factor, character, logical
+  } else if(is.character(covar)){ 
+    man_matrix<-man_matrix[,grepl(paste(min(covar),"$", sep=""), colnames(man_matrix))==FALSE] 
+  } else if(is.logical(covar)){
+    man_matrix<-man_matrix[,grepl(paste(as.logical(min(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # 
+  }
+  dat[colnames(man_matrix)]<-man_matrix ## update model matrix columns
+  formula.nmr<- as.formula(paste("~ 0 ",
+                                 paste0( " + ",paste("`",colnames(man_matrix),"`",sep="", ## the back ticks are necessary if the covariate levels/values contains spaces or special characters
+                                                     collapse = " + "))))
   
   # Get rid of warning 'Undefined global functions or variables'
   treat1 <- treat2 <-  comparison <- NULL
@@ -424,7 +429,7 @@ print.netmetareg <- function(x,
   #
   lower <- NULL
   #
-  if (is.numeric(covar)|is.integer(covar)) # update print output for as_df
+  if (is.numeric(covar)|is.integer(covar)|is.null(covar)) # update print output for as_df
     dat <- x$results[ , c("est", if (print.se) "se",
                           "lower", "upper", "z", "pval")]
   else
