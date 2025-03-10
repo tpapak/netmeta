@@ -95,12 +95,15 @@ netmetareg.netmeta <- function(x, covar = NULL,
                                reference.group = x$reference.group,
                                nchar.trts = x$nchar.trts, ...) {
   
+  #
+  #
+  # (1) Checks and assignments
+  #
+  #
+  
   chkclass(x, "netmeta")
   #
   x <- updateversion(x)
-  
-  #
-  # Checks and assignments
   #
   chklogical(consistency)
   assumption <- setchar(assumption, c("independent", "common"))
@@ -111,16 +114,26 @@ netmetareg.netmeta <- function(x, covar = NULL,
   #
   sm <- x$sm
   
-  #
-  # Return network meta-analysis object if covariate is missing
-  #
   
+  #
+  #
+  # (2) Return network meta-analysis object if covariate is missing
+  #
+  #
+
   if (missing(covar)) {
     warning("No network meta-regresssion conducted as argument 'covar'",
             "is missing.")
     return(x)
   }
+  
+  
   #
+  #
+  # (3) Create analysis data set
+  #
+  #
+  
   data <- x$data
   sfsp <- sys.frame(sys.parent())
   mc <- match.call()
@@ -265,11 +278,12 @@ netmetareg.netmeta <- function(x, covar = NULL,
   #
   trts.all <- varnames
   trts <- varnames[-length(varnames)]
-  #
-  # Calculate Variance-Covariance matrix
-  #
-  V <- bldiag(lapply(split(dat, dat$studlab), calcV, sm = sm))
   
+  
+  #
+  #
+  # (4) Create model matrix
+  #
   #
   
   if (consistency) {
@@ -281,7 +295,8 @@ netmetareg.netmeta <- function(x, covar = NULL,
                            paste0( " + ",
                              paste(paste0(trts, ":", covar.name),
                                  collapse = " + "))))
-    } else {
+    }
+    else {
       #
       # The interaction is all non-reference treatments vs reference,
       # so we can define a variable indicating whether it is reference
@@ -305,24 +320,44 @@ netmetareg.netmeta <- function(x, covar = NULL,
     warning("Inconsistency models not yet implemented.")
     return(NULL)
   }
+  #
+  # Checks for non-numeric covariate
+  #
+  mm <- model.matrix(formula.nmr_default, data = dat) # default model matrix
+  #
+  # Drop interactions which contain the reference covariate level if covariate
+  # is of mode factor, character, or logical
+  #
+  if (is.factor(covar))
+    mm <- mm[, !grepl(paste0(levels(covar)[1], "$"), colnames(mm)),
+             drop = FALSE]
+  else if (is.character(covar))
+    mm <- mm[, !grepl(paste0(min(covar, na.rm = TRUE), "$"), colnames(mm)),
+             drop = FALSE]
+  else if (is.logical(covar))
+    mm <- mm[, !grepl(paste0(as.logical(min(covar)), "$"), colnames(mm)),
+             drop = FALSE]
+  #
+  dat[colnames(mm)] <- mm # update model matrix columns
+  #
+  # The back ticks are necessary if the covariate levels / values contain
+  # spaces or special characters
+  #
+  formula.nmr <-
+    as.formula(paste("~ 0 ",
+                     paste0(" + ",
+                            paste0("`", colnames(mm), "`", collapse = " + "))))
   
-  # checks for non-continuous covariates
-  man_matrix<-model.matrix(formula.nmr_default, data=dat) # the default model matrix
-  if(is.factor(covar)){# check type so that we know how to handle the specific model matrix
-    man_matrix<-man_matrix[,grepl(paste(min(levels(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # drop interactions which contain the reference covariate level if covariate is factor, character, logical
-  } else if(is.character(covar)){ 
-    man_matrix<-man_matrix[,grepl(paste(min(covar),"$", sep=""), colnames(man_matrix))==FALSE] 
-  } else if(is.logical(covar)){
-    man_matrix<-man_matrix[,grepl(paste(as.logical(min(covar)),"$", sep=""), colnames(man_matrix))==FALSE] # 
-  }
-  dat[colnames(man_matrix)]<-man_matrix ## update model matrix columns
-  formula.nmr<- as.formula(paste("~ 0 ",
-                                 paste0( " + ",paste("`",colnames(man_matrix),"`",sep="", ## the back ticks are necessary if the covariate levels/values contains spaces or special characters
-                                                     collapse = " + "))))
+  
+  #
+  #
+  # (5) Run network meta-regression
+  #
+  #
   
   # Get rid of warning 'Undefined global functions or variables'
+  #
   treat1 <- treat2 <-  comparison <- NULL
-  
   #
   # Covariate 'x' makes problems without removing network meta-analysis object x
   #
@@ -332,16 +367,21 @@ netmetareg.netmeta <- function(x, covar = NULL,
   dat.TE <- dat$TE
   dat$comparison <- paste(dat$treat1, dat$treat2, sep = " vs ")
   #
-  suppressWarnings(res <-
-    runNN(rma.mv,
-          list(yi = dat.TE, V = V,
-               data = dat,
-               mods = formula.nmr,
-               random = as.call(~ factor(comparison) | studlab),
-               rho = 0.5,
-               method = method.tau,
-               level = 100 * level,
-               ...)))
+  # Calculate Variance-Covariance matrix
+  #
+  V <- bldiag(lapply(split(dat, dat$studlab), calcV, sm = sm))
+  #
+  suppressWarnings(
+    res <-
+      runNN(rma.mv,
+            list(yi = dat.TE, V = V,
+                 data = dat,
+                 mods = formula.nmr,
+                 random = as.call(~ factor(comparison) | studlab),
+                 rho = 0.5,
+                 method = method.tau,
+                 level = 100 * level,
+                 ...)))
   #
   X <- res$X.f
   rownames(X) <- dat$studlab
@@ -364,7 +404,7 @@ netmetareg.netmeta <- function(x, covar = NULL,
                        version = packageDescription("netmeta")$Version,
                        version.metafor = packageDescription("metafor")$Version)
   #
-  res$results <- as_df(res)
+  res$results <- nmr_df(res)
   #
   class(res) <- c("netmetareg", class(res))
   res$call <- NULL
@@ -423,24 +463,21 @@ print.netmetareg <- function(x,
   consistency <- x$.netmeta$consistency
   assumption <- x$.netmeta$assumption
   #
-  # class(x) <- class(x)[class(x) != "netmetareg"]
-  ##
-  #print(x, ...)
-  #
   lower <- NULL
   #
-  if (is.numeric(covar)|is.integer(covar)|is.null(covar)) # update print output for as_df
-    dat <- x$results[ , c("est", if (print.se) "se",
-                          "lower", "upper", "z", "pval")]
+  if (is.null(covar) || is.numeric(covar))
+    dat <- x$results[ , c("est", if (print.se) "se", "lower", "upper",
+                          "z", "pval")]
   else
-    dat <- x$results[ , c("cov_lvl", # we need the covariate level for all assumptions if the covariate is not continuous. theoretically, we might not need them for logical vectors, because logical vectors can be coerced to continuous
-                          "cov_ref",
-                          "est", if (print.se) "se",
-                          "lower", "upper", "z", "pval")]
-    #
+    dat <- x$results[ , c("cov_lvl", "cov_ref",
+                          "est", if (print.se) "se", "lower", "upper",
+                          "z", "pval")]
+  #
   dat$est <- formatN(dat$est, digits = digits)
+  #
   if (print.se)
-  dat$se <- formatN(dat$se, digits = digits.se, ...)
+    dat$se <- formatN(dat$se, digits = digits.se, ...)
+  #
   dat$lower <- formatCI(formatN(dat$lower, digits = digits),
                         formatN(dat$upper, digits = digits))
   dat$upper <- NULL

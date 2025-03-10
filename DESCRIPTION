@@ -1,7 +1,7 @@
 Package: netmeta
 Title: Network Meta-Analysis using Frequentist Methods
 Version: 3.2-0
-Date: 2025-02-27
+Date: 2025-03-10
 Depends: R (>= 4.0.0), meta (>= 8.0-1)
 Imports: Matrix, metafor, MASS, mvtnorm, magic, igraph, 
   ggplot2, colorspace, grid, dplyr, magrittr, methods
@@ -32,6 +32,9 @@ Authors@R: c(person("Gerta", "Rücker",
                     comment = c(ORCID = "0000-0002-2293-2146",
                     paste("Author of the original MIT-licensed",
                           "R package hasseDiagram"))),
+             person("Nana-Adjoa", "Kwarteng",
+                    role = "ctb",
+                    comment = c(ORCID = "0009-0009-0502-6887")),
              person("Guido", "Schwarzer",
                     role = c("aut", "cre"),
                     email = "guido.schwarzer@uniklinik-freiburg.de",

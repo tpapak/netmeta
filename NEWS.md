@@ -2,6 +2,9 @@
 
 ### Major changes
 
+* [Nana-Adjoa Kwarteng](https://orcid.org/0009-0009-0502-6887) added as
+  a contributor to the R package **netmeta**
+
 * New R function netmetareg() to conduct network meta-regression with a
   single continuous or binary covariate
 

@@ -248,7 +248,7 @@
 #'
 #' @importFrom stats as.formula dist hclust optim optimize pchisq
 #'   prcomp relevel reshape rnorm sd coef glm binomial vcov update fitted
-#'   residuals quantile setNames
+#'   residuals quantile setNames model.matrix
 #'   
 #' @importFrom methods as
 #'
