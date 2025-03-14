@@ -1238,7 +1238,8 @@ netmeta <- function(TE, seTE,
                 correlated = correlated,
                 func.inverse = func.inverse)
   #
-  W.matrix.common <- p0$W
+  W.matrix.common <- as.matrix(p0$W)
+  Cov.matrix.common <- as.matrix(p0$Cov)
   dat.c <- p0$data
   #
   # Check consistency of treatment effects and standard errors in
@@ -1268,7 +1269,7 @@ netmeta <- function(TE, seTE,
   # Common effects model
   #
   res.c <- nma_ruecker(dat.c$TE,
-                       as.matrix(W.matrix.common),
+                       W.matrix.common,
                        sqrt(1 / dat.c$weights),
                        dat.c$treat1, dat.c$treat2,
                        dat.c$treat1.pos, dat.c$treat2.pos,
@@ -1419,11 +1420,12 @@ netmeta <- function(TE, seTE,
                 tau = tau, correlated = correlated,
                 func.inverse = func.inverse)
   #
-  W.matrix.random <- p1$W
+  W.matrix.random <- as.matrix(p1$W)
+  Cov.matrix.random <- as.matrix(p1$Cov)
   dat.r <- p1$data
   #
   res.r <- nma_ruecker(dat.r$TE,
-                       as.matrix(W.matrix.random),
+                       W.matrix.random,
                        sqrt(1 / dat.r$weights),
                        dat.r$treat1, dat.r$treat2,
                        dat.r$treat1.pos, dat.r$treat2.pos,
@@ -1474,6 +1476,12 @@ netmeta <- function(TE, seTE,
   #
   W.matrix.random <- W.matrix.random[o, o, drop = FALSE]
   rownames(W.matrix.random) <- colnames(W.matrix.random) <- res.c$studlab[o]
+  #
+  Cov.matrix.common <- Cov.matrix.common[o, o, drop = FALSE]
+  rownames(Cov.matrix.common) <- colnames(Cov.matrix.common) <- res.c$studlab[o]
+  #
+  Cov.matrix.random <- Cov.matrix.random[o, o, drop = FALSE]
+  rownames(Cov.matrix.random) <- colnames(Cov.matrix.random) <- res.c$studlab[o]
   #
   res <- list(studlab = res.c$studlab[o],
               treat1 = res.c$treat1[o],
@@ -1617,6 +1625,9 @@ netmeta <- function(TE, seTE,
               #
               W.matrix.common = W.matrix.common,
               W.matrix.random = W.matrix.random,
+              #
+              Cov.matrix.common = Cov.matrix.common,
+              Cov.matrix.random = Cov.matrix.random,
               #
               A.matrix = res.c$A.matrix,
               X.matrix = res.c$B.matrix[o, ],
