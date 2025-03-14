@@ -369,5 +369,15 @@ nmr_full_results <- function(x) {
   treat2 <- sapply(split_comps, second)
   res %<>% filter(treat1 != treat2)
   #
+  # Set beta, se.beta and cov to NA if they are all zero
+  #
+  if (isCol(res, "beta")) {
+    sel.zero <- with(res, beta == 0 & se.beta == 0 & cov == 0)
+    #
+    res$beta[sel.zero] <- NA
+    res$se.beta[sel.zero] <- NA
+    res$cov[sel.zero] <- NA
+  }
+  #
   res
 }

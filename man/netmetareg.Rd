@@ -116,7 +116,22 @@ iterative estimation algorithm. See help page of R function
 \code{\link[metafor]{rma.mv}} for more details.
 }
 \examples{
-# Add examples
+data(smokingcessation)
+# Add variable with (fictitious) risk of bias values
+# with 1 = "low risk" and 2 = "high risk"
+#
+smokingcessation$rob <- rep(1:2, 12)
+
+pw1 <- pairwise(list(treat1, treat2, treat3),
+  event = list(event1, event2, event3), n = list(n1, n2, n3),
+  data = smokingcessation, sm = "OR")
+
+net1 <- netmeta(pw1, common = FALSE, ref = "A")
+
+# Network meta-regression with continuous covariate and assumption of
+# independent slopes
+nr1 <- netmetareg(net1, rob)
+nr1
 
 }
 \references{
