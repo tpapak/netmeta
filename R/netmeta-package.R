@@ -281,6 +281,7 @@
 #'   unit viewport
 #' 
 #' @importFrom dplyr %>% filter select rename starts_with relocate last_col
+#'   mutate if_else
 #' 
 #' @importFrom magrittr %<>%
 

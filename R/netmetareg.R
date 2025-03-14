@@ -404,7 +404,8 @@ netmetareg.netmeta <- function(x, covar = NULL,
                        version = packageDescription("netmeta")$Version,
                        version.metafor = packageDescription("metafor")$Version)
   #
-  res$results <- nmr_df(res)
+  res$results <- nmr_results(res)
+  res$full_results <- nmr_full_results(res)
   #
   class(res) <- c("netmetareg", class(res))
   res$call <- NULL
@@ -466,14 +467,14 @@ print.netmetareg <- function(x,
   lower <- NULL
   #
   if (is.null(covar) || is.numeric(covar))
-    dat <- x$results[ , c("est", if (print.se) "se", "lower", "upper",
+    dat <- x$results[ , c("coef", if (print.se) "se", "lower", "upper",
                           "z", "pval")]
   else
     dat <- x$results[ , c("cov_lvl", "cov_ref",
-                          "est", if (print.se) "se", "lower", "upper",
+                          "coef", if (print.se) "se", "lower", "upper",
                           "z", "pval")]
   #
-  dat$est <- formatN(dat$est, digits = digits)
+  dat$coef <- formatN(dat$coef, digits = digits)
   #
   if (print.se)
     dat$se <- formatN(dat$se, digits = digits.se, ...)
