@@ -10,6 +10,7 @@
 #'   \code{print.default}.
 #' @param digits.se Minimal number of significant digits for standard
 #'   errors.
+#' @param big.mark A character used as thousands separator.
 #' @param \dots Additional arguments (ignored).
 #' 
 #' @author Guido Schwarzer \email{guido.schwarzer@@uniklinik-freiburg.de}
@@ -57,22 +58,33 @@ summary.netmetareg <- function(object, ...) {
 print.summary.netmetareg <- function(x,
                                      digits = gs("digits"),
                                      digits.se = gs("digits.se"),
+                                     big.mark = gs("big.mark"),
                                      ...) {
   
   chkclass(x, "summary.netmetareg")
   #
   chknumeric(digits, min = 0, length = 1)
   chknumeric(digits.se, min = 0, length = 1)
+  chkchar(big.mark, length = 1)
   #
   dat <- x$full_results
   rownames(dat) <- dat$comparison
   dat$comparison <- NULL
   #
-  dat$d <- formatN(dat$d, digits = digits, text.NA = ".")
-  dat$se.d <- formatN(dat$se.d, digits = digits.se, text.NA = ".")
-  dat$beta <- formatN(dat$beta, digits = digits, text.NA = ".")
-  dat$se.beta <- formatN(dat$se.beta, digits = digits.se, text.NA = ".")
-  dat$cov <- formatN(dat$cov, digits = digits.se, text.NA = ".")
+  dat$d <-
+    formatN(dat$d, digits = digits, big.mark = big.mark, text.NA = ".")
+  dat$se.d <-
+    formatN(dat$se.d, digits = digits.se, big.mark = big.mark, text.NA = ".")
+  dat$beta <-
+    formatN(dat$beta, digits = digits, big.mark = big.mark, text.NA = ".")
+  dat$se.beta <-
+    formatN(dat$se.beta, digits = digits.se, big.mark = big.mark, text.NA = ".")
+  dat$cov <-
+    formatN(dat$cov, digits = digits.se, big.mark = big.mark, text.NA = ".")
+  #
+  # Do not print treatment labels (which are contained in the row names)
+  #
+  dat$treat1 <- dat$treat2 <- NULL
   #
   prmatrix(dat, quote = FALSE, right = TRUE)
   #

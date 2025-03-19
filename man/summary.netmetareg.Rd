@@ -7,7 +7,13 @@
 \usage{
 \method{summary}{netmetareg}(object, ...)
 
-\method{print}{summary.netmetareg}(x, digits = gs("digits"), digits.se = gs("digits.se"), ...)
+\method{print}{summary.netmetareg}(
+  x,
+  digits = gs("digits"),
+  digits.se = gs("digits.se"),
+  big.mark = gs("big.mark"),
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{netmetareg}.}
@@ -21,6 +27,8 @@
 
 \item{digits.se}{Minimal number of significant digits for standard
 errors.}
+
+\item{big.mark}{A character used as thousands separator.}
 }
 \description{
 Summary method for objects of class \code{netmetareg} to print

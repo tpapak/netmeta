@@ -12,7 +12,7 @@ nmr_results <- function(x,
   
   # Get rid of warning "no visible binding for global variable"
   #
-  treat <- NULL
+  treat <- treat_temp <- NULL
   
   dat <- data.frame(treat = "",
                     coef = x$b, se = x$se,
@@ -36,10 +36,9 @@ nmr_results <- function(x,
   if (is.null(covar)) {
     return(dat_d)
   }
-  else{
+  else {
     is_num <- is.numeric(covar)
   }
-  #
   #
   # Add variables relevant for interaction terms
   #
@@ -68,71 +67,74 @@ nmr_results <- function(x,
   if (is_num) {
     row.names(dat_beta) <- paste0("beta[", rnam[!sel_d], "]")
   }  else {
-      # Add original treatment names (to merge results)
-      #
-      dat_beta %<>%
-        mutate(treat_temp=ifelse(treat=="nonref", reference.group, treat),# for the common assumption only the covariates observed for the reference treat are relevant
-               treat_long =
-                 as.character(factor(treat_temp, levels = trts.abbr, labels = trts)))%>%
-        select(-treat_temp)
-      #
-      # Get observed covariate levels for each treatment
-      #
-      dat_cov <- x$.netmeta$x$data[, c("treat1", "treat2", covar.name)]
-      #
-      # Convert to long format
-      #
-      unique_lvls <- rbind(setNames(dat_cov[, c("treat1", covar.name)],
-                                    c("treat_long", "lvl")),
-                           setNames(dat_cov[, c("treat2", covar.name)],
-                                    c("treat_long", "lvl")))
-      #
-      unique_lvls <- unique(unique_lvls)
-      # Add treatment abbreviations
-      unique_lvls <- merge(unique_lvls,
-                           data.frame(treat_long = trts,
-                                      treat = trts.abbr),
-                           by = "treat_long", all.x = TRUE)
-      #
-      if (assumption == "common") {
-        unique_lvls$treat <-
-          ifelse(unique_lvls$treat == reference.group,
-                 "nonref",
-                 unique_lvls$treat)
-      }
-      #
-      # Capture estimated factor levels
-      #
-      dat_beta$lvl <- gsub(covar.name, "", lvls_beta)
-      #
-      # Get the non-included covariate levels aka covariate references
-      #
-      ref_lvls <-
-        merge(unique_lvls, dat_beta,
-              by = c("treat_long", "lvl", "treat"),
-              all.x = TRUE)
-      #
-      ref_lvls <- ref_lvls[is.na(ref_lvls$coef), c("treat_long", "lvl", "treat")]
-      colnames(ref_lvls)[colnames(ref_lvls) == "lvl"] <- "cov_ref"
-      #
-      # Should be 1 to many. If there is an issue then it is likely in rma.mv()
-      #
-      dat_beta <-
-        merge(dat_beta, ref_lvls,
-              by = c("treat_long", "treat"), all.x = TRUE)
-      colnames(dat_beta)[colnames(dat_beta) == "lvl"] <- "cov_lvl"
-      #
-      # Remove variable treat_long which we only used for merging
-      #
-      dat_beta <- dat_beta[, names(dat_beta) != "treat_long"]
-      #
-      rnam_beta <- paste0("beta[", rnam[!sel_d], "]")
-      #
-      for (i in seq_along(dat_beta$cov_lvl)) {
-        rnam_beta[i] <- gsub(dat_beta$cov_lvl[i], "", rnam_beta[i])
-      }
-      #
-      row.names(dat_beta) <- rnam_beta
+    # Add original treatment names to merge results
+    # (for the common assumption only the covariates observed for the
+    #  reference treatment are relevant)
+    #
+    dat_beta %<>%
+      mutate(treat_temp = ifelse(treat == "nonref", reference.group, treat),
+             treat_long =
+               as.character(factor(treat_temp,
+                                   levels = trts.abbr, labels = trts))) %>%
+      select(-treat_temp)
+    #
+    # Get observed covariate levels for each treatment
+    #
+    dat_cov <- x$.netmeta$x$data[, c("treat1", "treat2", covar.name)]
+    #
+    # Convert to long format
+    #
+    unique_lvls <- rbind(setNames(dat_cov[, c("treat1", covar.name)],
+                                  c("treat_long", "lvl")),
+                         setNames(dat_cov[, c("treat2", covar.name)],
+                                  c("treat_long", "lvl")))
+    #
+    unique_lvls <- unique(unique_lvls)
+    # Add treatment abbreviations
+    unique_lvls <- merge(unique_lvls,
+                         data.frame(treat_long = trts,
+                                    treat = trts.abbr),
+                         by = "treat_long", all.x = TRUE)
+    #
+    if (assumption == "common") {
+      unique_lvls$treat <-
+        ifelse(unique_lvls$treat == reference.group,
+               "nonref",
+               unique_lvls$treat)
+    }
+    #
+    # Capture estimated factor levels
+    #
+    dat_beta$lvl <- gsub(covar.name, "", lvls_beta)
+    #
+    # Get the non-included covariate levels aka covariate references
+    #
+    ref_lvls <-
+      merge(unique_lvls, dat_beta,
+            by = c("treat_long", "lvl", "treat"),
+            all.x = TRUE)
+    #
+    ref_lvls <- ref_lvls[is.na(ref_lvls$coef), c("treat_long", "lvl", "treat")]
+    colnames(ref_lvls)[colnames(ref_lvls) == "lvl"] <- "cov_ref"
+    #
+    # Should be 1 to many. If there is an issue then it is likely in rma.mv()
+    #
+    dat_beta <-
+      merge(dat_beta, ref_lvls,
+            by = c("treat_long", "treat"), all.x = TRUE)
+    colnames(dat_beta)[colnames(dat_beta) == "lvl"] <- "cov_lvl"
+    #
+    # Remove variable treat_long which we only used for merging
+    #
+    dat_beta <- dat_beta[, names(dat_beta) != "treat_long"]
+    #
+    rnam_beta <- paste0("beta[", rnam[!sel_d], "]")
+    #
+    for (i in seq_along(dat_beta$cov_lvl)) {
+      rnam_beta[i] <- gsub(dat_beta$cov_lvl[i], "", rnam_beta[i])
+    }
+    #
+    row.names(dat_beta) <- rnam_beta
   }
   #
   res <- rbind(dat_d, dat_beta)
@@ -155,18 +157,21 @@ nmr_full_results <- function(x) {
   reference.group <- x$.netmeta$reference.group
   consistency <- x$.netmeta$consistency
   covar <- x$.netmeta$covar
-  covar_is_factor <- is.factor(covar)|is.character(covar) # the issues with factors with more than 2 levels are the same for character covariates with more than 2 levels
+  # The issues with factors with more than two levels are the same for
+  # character covariates with more than two levels
+  #
+  covar_is_factor <- is.factor(covar) | is.character(covar)
   #
   sep.trts <- x$.netmeta$x$sep.trts
   #
   # Extract estimates from rma.mv()
   #
   results <- x$results
-
+  
   # Get rid of warning "no visible binding for global variable"
   #
   comparison <- cov <- cov.default <- interim.x <- interim.y <-
-    ref.x <- ref.y <- treat <- type <- value <- NULL
+    ref.x <- ref.y <- treat <- type <- value <- treat1 <- treat2 <- NULL
   
   #
   # Generate matrix combinations for consistent parameters
@@ -219,10 +224,13 @@ nmr_full_results <- function(x) {
   #
   # Covariance for interaction terms
   #
-  if (is.null(covar) | (covar_is_factor & length(unique(covar))>2)) {
-    # We don't have a solution for factor/categorical covariates with more than 2 categories. We lose the information on comparator/reference group assignment which will later be important for more than 2 categories
+  if (is.null(covar) | (covar_is_factor & length(unique(covar)) > 2)) {
+    # We don't have a solution for factor / categorical covariates with more
+    # than two levels. We lose the information on comparator / reference group
+    # assignment which will later be important for more than two levels
+    #
     return(merge(dat_d, dat_se.d, by = "comparison", all.x = TRUE))
-  }  
+  }
   else if (consistency) {
     if (assumption == "common") {
       # The common assumption has one beta per treatment
@@ -253,10 +261,14 @@ nmr_full_results <- function(x) {
       dat_cov_d_beta <-
         data.frame(comparison =
                      paste(names(Cov_d_beta), reference.group, sep = sep.trts),
-                   cov = Cov_d_beta)%>%
+                   cov = Cov_d_beta) %>%
+        # Include reverse comparisons by reversing the label; values are
+        # equivalent.
+        #
         bind_rows(data.frame(comparison =
-                               paste(reference.group, names(Cov_d_beta), sep = sep.trts),
-                             cov = Cov_d_beta)) # include reverse comparisons by reversing the label. values are equivalent
+                               paste(reference.group, names(Cov_d_beta),
+                                     sep = sep.trts),
+                             cov = Cov_d_beta))
       #
       dat_cov_d_beta <-
         merge(all_se.beta, dat_cov_d_beta, by = "comparison", all.x = TRUE) %>%
@@ -323,19 +335,21 @@ nmr_full_results <- function(x) {
         mutate(cov =
                  if_else(interaction == treat,
                          ref.x,
-                         ref.x + ref.y - interim.x - interim.y)) # calculate covariances
+                         ref.x + ref.y - interim.x - interim.y))
       comb1 %<>%
         mutate(comparison =
                  if_else(interaction == treat,
                          paste(interaction, reference.group, sep = sep.trts),
                          paste(interaction, treat, sep = sep.trts))) %>%
-        bind_rows(comb1 %<>%
-        mutate(comparison =
-                 if_else(interaction == treat,
-                         paste(reference.group, interaction, sep = sep.trts),
-                         paste(treat, interaction, sep = sep.trts))))%>% # include reverse comparisons by reversing the label. values are equivalent
+        bind_rows(
+          comb1 %<>%
+            mutate(comparison =
+                     if_else(interaction == treat,
+                             paste(reference.group, interaction,
+                                   sep = sep.trts),
+                             paste(treat, interaction, sep = sep.trts)))) %>%
         select(comparison, cov)
-      
+      #
       dat_cov_d_beta <- unique(comb1)
     }
     #
@@ -352,7 +366,8 @@ nmr_full_results <- function(x) {
       #
       dat_se.beta.i <- as.data.frame(mat_se.beta)[i]
       names(dat_se.beta.i) <- "se.beta"
-      dat_se.beta.i$comparison <- paste(rownames(dat_se.beta.i), i, sep = sep.trts)
+      dat_se.beta.i$comparison <-
+        paste(rownames(dat_se.beta.i), i, sep = sep.trts)
       dat_se.beta <- rbind(dat_se.beta, dat_se.beta.i)
     }
   }
@@ -369,11 +384,7 @@ nmr_full_results <- function(x) {
   split_comps <- strsplit(res$comparison, "[:]")
   res$treat1 <- sapply(split_comps, first)
   res$treat2 <- sapply(split_comps, second)
-  res %<>% filter(treat1 != treat2)
-  #
-  # Set beta, se.beta and cov to NA if they are all zero. 
-  # why? zeroes should be retained in common with consistency non-reference containing comparisons. If this is related to the old syntax/comment "# otherwise NMA will not run", it's not needed in the new structure because the NMA output has a different format than the NMR output.
-  
+  res %<>% filter(treat1 != treat2) %>% filter(!duplicated(comparison))
   #
   # if (isCol(res, "beta")) {
   #   sel.zero <- with(res, beta == 0 & se.beta == 0 & cov == 0)
@@ -383,6 +394,5 @@ nmr_full_results <- function(x) {
   #   res$cov[sel.zero] <- NA
   # }
   #
-  return(res)
+  res
 }
-
