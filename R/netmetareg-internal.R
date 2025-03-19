@@ -36,8 +36,9 @@ nmr_results <- function(x,
   if (is.null(covar)) {
     return(dat_d)
   }
-  else
+  else{
     is_num <- is.numeric(covar)
+  }
   #
   #
   # Add variables relevant for interaction terms
@@ -66,21 +67,14 @@ nmr_results <- function(x,
   #
   if (is_num) {
     row.names(dat_beta) <- paste0("beta[", rnam[!sel_d], "]")
-  }
-  else {
-    if (assumption == "common") {
-      dat_beta$cov_lvl <- levels(covar)[2]
-      dat_beta$cov_ref <- levels(covar)[1]
-      #
-      row.names(dat_beta) <- paste0("beta[nonref:", covar.name, "]")
-    }
-    else {
-      #
+  }  else {
       # Add original treatment names (to merge results)
       #
       dat_beta %<>%
-        mutate(treat_long =
-                 as.character(factor(treat, levels = trts.abbr, labels = trts)))
+        mutate(treat_temp=ifelse(treat=="nonref", reference.group, treat),# for the common assumption only the covariates observed for the reference treat are relevant
+               treat_long =
+                 as.character(factor(treat_temp, levels = trts.abbr, labels = trts)))%>%
+        select(-treat_temp)
       #
       # Get observed covariate levels for each treatment
       #
@@ -139,7 +133,6 @@ nmr_results <- function(x,
       }
       #
       row.names(dat_beta) <- rnam_beta
-    }
   }
   #
   res <- rbind(dat_d, dat_beta)
@@ -162,7 +155,7 @@ nmr_full_results <- function(x) {
   reference.group <- x$.netmeta$reference.group
   consistency <- x$.netmeta$consistency
   covar <- x$.netmeta$covar
-  covar_is_factor <- is.factor(covar)
+  covar_is_factor <- is.factor(covar)|is.character(covar) # the issues with factors with more than 2 levels are the same for character covariates with more than 2 levels
   #
   sep.trts <- x$.netmeta$x$sep.trts
   #
@@ -226,10 +219,10 @@ nmr_full_results <- function(x) {
   #
   # Covariance for interaction terms
   #
-  if (is.null(covar) | covar_is_factor) {
-    # We don't have a solution for categorical covariates
+  if (is.null(covar) | (covar_is_factor & length(unique(covar))>2)) {
+    # We don't have a solution for factor/categorical covariates with more than 2 categories. We lose the information on comparator/reference group assignment which will later be important for more than 2 categories
     return(merge(dat_d, dat_se.d, by = "comparison", all.x = TRUE))
-  }
+  }  
   else if (consistency) {
     if (assumption == "common") {
       # The common assumption has one beta per treatment
@@ -260,7 +253,10 @@ nmr_full_results <- function(x) {
       dat_cov_d_beta <-
         data.frame(comparison =
                      paste(names(Cov_d_beta), reference.group, sep = sep.trts),
-                   cov = Cov_d_beta)
+                   cov = Cov_d_beta)%>%
+        bind_rows(data.frame(comparison =
+                               paste(reference.group, names(Cov_d_beta), sep = sep.trts),
+                             cov = Cov_d_beta)) # include reverse comparisons by reversing the label. values are equivalent
       #
       dat_cov_d_beta <-
         merge(all_se.beta, dat_cov_d_beta, by = "comparison", all.x = TRUE) %>%
@@ -327,13 +323,19 @@ nmr_full_results <- function(x) {
         mutate(cov =
                  if_else(interaction == treat,
                          ref.x,
-                         ref.x + ref.y - interim.x - interim.y),
-               comparison =
+                         ref.x + ref.y - interim.x - interim.y)) # calculate covariances
+      comb1 %<>%
+        mutate(comparison =
                  if_else(interaction == treat,
                          paste(interaction, reference.group, sep = sep.trts),
                          paste(interaction, treat, sep = sep.trts))) %>%
+        bind_rows(comb1 %<>%
+        mutate(comparison =
+                 if_else(interaction == treat,
+                         paste(reference.group, interaction, sep = sep.trts),
+                         paste(treat, interaction, sep = sep.trts))))%>% # include reverse comparisons by reversing the label. values are equivalent
         select(comparison, cov)
-      #
+      
       dat_cov_d_beta <- unique(comb1)
     }
     #
@@ -365,19 +367,22 @@ nmr_full_results <- function(x) {
   # Drop comparisons with themselves
   #
   split_comps <- strsplit(res$comparison, "[:]")
-  treat1 <- sapply(split_comps, first)
-  treat2 <- sapply(split_comps, second)
+  res$treat1 <- sapply(split_comps, first)
+  res$treat2 <- sapply(split_comps, second)
   res %<>% filter(treat1 != treat2)
   #
-  # Set beta, se.beta and cov to NA if they are all zero
+  # Set beta, se.beta and cov to NA if they are all zero. 
+  # why? zeroes should be retained in common with consistency non-reference containing comparisons. If this is related to the old syntax/comment "# otherwise NMA will not run", it's not needed in the new structure because the NMA output has a different format than the NMR output.
+  
   #
-  if (isCol(res, "beta")) {
-    sel.zero <- with(res, beta == 0 & se.beta == 0 & cov == 0)
-    #
-    res$beta[sel.zero] <- NA
-    res$se.beta[sel.zero] <- NA
-    res$cov[sel.zero] <- NA
-  }
+  # if (isCol(res, "beta")) {
+  #   sel.zero <- with(res, beta == 0 & se.beta == 0 & cov == 0)
+  #   #
+  #   res$beta[sel.zero] <- NA
+  #   res$se.beta[sel.zero] <- NA
+  #   res$cov[sel.zero] <- NA
+  # }
   #
-  res
+  return(res)
 }
+
