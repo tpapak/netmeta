@@ -26,6 +26,9 @@
 #'   \code{print.default}.
 #' @param legend A logical indicating whether a legend should be
 #'   printed.
+#' @param pathContribution A logical indicating whether the contribution matrix
+#'   of individual paths should be printed. (Currently supported only for the
+#'   \{"shortextpath"} method)
 #' @param warn.deprecated A logical indicating whether warnings should
 #'   be printed if deprecated arguments are used.
 #' @param verbose A logical indicating whether progress information
@@ -129,6 +132,10 @@
 #' \item{random}{Numeric matrix of percentage contributions of direct
 #'   comparisons for each network comparison for the random effects
 #'   model.}
+#' \item{common.pcm}{Data frame containing path contributions for each
+#'   comparison for the common effect model.}
+#' \item{random.pcm}{Data frame containing path contributions for each
+#'   comparison for the random effects model.}
 #' \item{x}{As defined above.}
 #' \item{tictoc.common}{Computation times under common effects model
 #'   (if R package \bold{tictoc} is installed).}
@@ -189,6 +196,7 @@ netcontrib <- function(x,
                        common = x$common,
                        random = x$random,
                        nchar.trts = x$nchar.trts,
+                       pathContribution = FALSE,
                        warn.deprecated = gs("warn.deprecated"),
                        verbose = FALSE,
                        ...) {
@@ -219,6 +227,7 @@ netcontrib <- function(x,
   if (method == "cccp")
     is_installed_package("cccp")
   
+  chklogical(pathContribution)
   chknumeric(nchar.trts, min = 1, length = 1)
   chklogical(verbose)
   ##
@@ -247,11 +256,13 @@ netcontrib <- function(x,
   x$common <- common
   x$random <- random
   ##
-  cm.f <- contribution.matrix(x, method, "common", hatmatrix.F1000, verbose)
-  cm.r <- contribution.matrix(x, method, "random", hatmatrix.F1000, verbose)
+  cm.f <- contribution.matrix(x, method, "common", hatmatrix.F1000, verbose, pathContribution)
+  cm.r <- contribution.matrix(x, method, "random", hatmatrix.F1000, verbose, pathContribution)
   ##
   res <- list(common = cm.f$weights,
               random = cm.r$weights,
+              common.pcm = cm.f$pathContribution.Matrix,
+              random.pcm = cm.r$pathContribution.Matrix,
               method = method,
               hatmatrix.F1000 = hatmatrix.F1000,
               nchar.trts = nchar.trts,
