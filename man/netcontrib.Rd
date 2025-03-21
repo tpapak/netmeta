@@ -186,7 +186,9 @@ net1 <- netmeta(pw1)
 
 # Shortest path approach (default)
 netcontrib(net1)
+}
 
+\dontrun{ 
 # Random walk approach
 netcontrib(net1, method = "r")
 }

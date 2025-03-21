@@ -81,6 +81,7 @@
 #' @keywords models regression
 #' 
 #' @examples
+#' \donttest{
 #' data(smokingcessation)
 #' # Add variable with (fictitious) risk of bias values
 #' # with 1 = "low risk" and 2 = "high risk"
@@ -97,6 +98,7 @@
 #' # independent slopes
 #' nr1 <- netmetareg(net1, rob)
 #' nr1
+#' }
 #' 
 #' @rdname netmetareg
 #' @method netmetareg netmeta

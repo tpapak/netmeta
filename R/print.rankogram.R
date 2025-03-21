@@ -24,8 +24,7 @@
 #' 
 #' @author Guido Schwarzer \email{guido.schwarzer@@uniklinik-freiburg.de}
 #'
-#' @seealso \code{\link{rankogram}}, \code{\link{plot.rankogram}},
-#'   \code{\link[metadat]{dat.woods2010}}
+#' @seealso \code{\link{rankogram}}, \code{\link{plot.rankogram}}
 #'
 #' @references
 #' Salanti G, Ades AE, Ioannidis JP (2011):
@@ -33,15 +32,11 @@
 #' from multiple-treatment meta-analysis: an overview and tutorial.
 #' \emph{Journal of Clinical Epidemiology},
 #' \bold{64}, 163--71
+#' 
+#' @keywords print
 #'
 #' @examples
-#' pw1 <- pairwise(treatment, event = r, n = N, studlab = author,
-#'   data = dat.woods2010, sm = "OR")
-#' net1 <- netmeta(pw1, small.values = "desirable")
-#'
-#' ran1 <- rankogram(net1, nsim = 100)
-#' ran1
-#' print(ran1, cumulative.rankprob = TRUE)
+#' # Examples: example(rankogram.netmeta)
 #'
 #' @rdname print.rankogram
 #' @method print rankogram

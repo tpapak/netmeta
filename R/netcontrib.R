@@ -175,7 +175,9 @@
 #' 
 #' # Shortest path approach (default)
 #' netcontrib(net1)
-#' 
+#' }
+#'
+#' \dontrun{ 
 #' # Random walk approach
 #' netcontrib(net1, method = "r")
 #' }
