@@ -12,6 +12,7 @@
   sort = TRUE,
   nchar.trts = x$nchar.trts,
   digits = gs("digits.prop"),
+  details.methods = gs("details"),
   legend = gs("legend"),
   warn.deprecated = gs("warn.deprecated"),
   ...
@@ -37,6 +38,9 @@ characters used to create unique treatment names.}
 
 \item{digits}{Minimal number of significant digits, see
 \code{\link{print.default}}.}
+
+\item{details.methods}{A logical specifying whether details on statistical
+methods should be printed.}
 
 \item{legend}{A logical indicating whether a legend should be
 printed.}

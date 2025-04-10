@@ -62,6 +62,8 @@
 #' 
 #' Additional methods and functions:
 #' \itemize{
+#' \item network meta-regression with a single continuous or binary covariate
+#'   (\code{\link{netmetareg}});
 #' \item subgroup network meta-analysis (\code{\link{subgroup.netmeta}});
 #' \item information on network connectivity
 #'   (\code{\link{netconnection}});

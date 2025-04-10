@@ -16,6 +16,8 @@
 #'   characters used to create unique treatment names.
 #' @param digits Minimal number of significant digits, see
 #'   \code{\link{print.default}}.
+#' @param details.methods A logical specifying whether details on statistical
+#'   methods should be printed.
 #' @param legend A logical indicating whether a legend should be
 #'   printed.
 #' @param warn.deprecated A logical indicating whether warnings should
@@ -49,6 +51,7 @@ print.rankogram <- function(x,
                             sort = TRUE,
                             nchar.trts = x$nchar.trts,
                             digits = gs("digits.prop"),
+                            details.methods = gs("details"),
                             legend = gs("legend"),
                             warn.deprecated = gs("warn.deprecated"),
                             ...) {
@@ -75,6 +78,7 @@ print.rankogram <- function(x,
   chknumeric(nchar.trts, length = 1)
   #
   chknumeric(digits, length = 1)
+  chklogical(details.methods)
   chklogical(legend)
   #
   # Check for deprecated arguments in '...'
@@ -146,7 +150,6 @@ print.rankogram <- function(x,
   #
   # Print details of network meta-analysis methods
   #
-  details.methods <- TRUE
   if (details.methods) {
     text.details <-
       textmeth(x, random, TRUE)

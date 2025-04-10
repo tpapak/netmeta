@@ -1,4 +1,4 @@
-## netmeta, version 3.2-0 (2025-mm-dd)
+## netmeta, version 3.2-0 (2025-04-10)
 
 ### Major changes
 
@@ -7,6 +7,11 @@
 
 * New R function netmetareg() to conduct network meta-regression with a
   single continuous or binary covariate
+
+* Calculate mean and median ranks in R function rankogram()
+
+* New R functions summary.rankogram() and print.summary.rankogram() to print
+  SUCRAs and mean ranks in addition to ranking probabilities
 
 * Add R package **crossnma** to Suggests
 

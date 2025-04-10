@@ -137,8 +137,11 @@ rankogram.default <- function(x, pooled = "unspecified",
   if (small.values == "undesirable")
     x <- -x
   #
-  sucras.common  <- ranking.matrix.common  <- cumrank.matrix.common  <- NULL
-  sucras.random <- ranking.matrix.random <- rank.cum.random <- NULL
+  sucras.common  <- ranking.matrix.common  <- cumrank.matrix.common <-
+    meanranks.common <- medianranks.common <- NULL
+  #
+  sucras.random <- ranking.matrix.random <- cumrank.matrix.random <-
+    meanranks.random <- medianranks.random <- NULL
   #
   if (common) {
     res.c <- rankings(x)
@@ -146,6 +149,9 @@ rankogram.default <- function(x, pooled = "unspecified",
     sucras.common <- res.c$sucras
     ranking.matrix.common <- res.c$rankogram
     cumrank.matrix.common <- res.c$cumrank
+    #
+    meanranks.common <- res.c$meanranks
+    medianranks.common <- res.c$medianranks
     #
     samples.common <- x
     nsim <- res.c$nsim
@@ -156,7 +162,10 @@ rankogram.default <- function(x, pooled = "unspecified",
     #
     sucras.random <- res.r$sucras
     ranking.matrix.random <- res.r$rankogram
-    rank.cum.random <- res.r$cumrank
+    cumrank.matrix.random <- res.r$cumrank
+    #
+    meanranks.random <- res.r$meanranks
+    medianranks.random <- res.r$medianranks
     #
     samples.random <- x
     nsim <- res.r$nsim
@@ -172,12 +181,20 @@ rankogram.default <- function(x, pooled = "unspecified",
   res <- list(ranking.common = sucras.common,
               ranking.matrix.common = ranking.matrix.common,
               cumrank.matrix.common = cumrank.matrix.common,
+              #
+              meanranks.common = meanranks.common,
+              medianranks.common = medianranks.common,
+              #
               samples.common =
                 if (common & keep.samples) samples.common else NULL,
               #
               ranking.random = sucras.random,
               ranking.matrix.random = ranking.matrix.random,
-              cumrank.matrix.random = rank.cum.random,
+              cumrank.matrix.random = cumrank.matrix.random,
+              #
+              meanranks.random = meanranks.random,
+              medianranks.random = medianranks.random,
+              #
               samples.random =
                 if (random & keep.samples) samples.random else NULL,
               #
