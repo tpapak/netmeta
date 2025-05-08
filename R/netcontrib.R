@@ -196,6 +196,7 @@ netcontrib <- function(x,
                        common = x$common,
                        random = x$random,
                        nchar.trts = x$nchar.trts,
+                       studyContribution = FALSE,
                        pathContribution = FALSE,
                        warn.deprecated = gs("warn.deprecated"),
                        verbose = FALSE,
@@ -227,6 +228,7 @@ netcontrib <- function(x,
   if (method == "cccp")
     is_installed_package("cccp")
   
+  chklogical(studyContribution)
   chklogical(pathContribution)
   chknumeric(nchar.trts, min = 1, length = 1)
   chklogical(verbose)
@@ -256,11 +258,13 @@ netcontrib <- function(x,
   x$common <- common
   x$random <- random
   ##
-  cm.f <- contribution.matrix(x, method, "common", hatmatrix.F1000, verbose, pathContribution)
-  cm.r <- contribution.matrix(x, method, "random", hatmatrix.F1000, verbose, pathContribution)
+  cm.f <- contribution.matrix(x, method, "common", hatmatrix.F1000, verbose, studyContribution, pathContribution)
+  cm.r <- contribution.matrix(x, method, "random", hatmatrix.F1000, verbose, studyContribution, pathContribution)
   ##
   res <- list(common = cm.f$weights,
               random = cm.r$weights,
+              common.scm = cm.f$studyContribution.Matrix,
+              random.scm = cm.r$studyContribution.Matrix,
               common.pcm = cm.f$pathContribution.Matrix,
               random.pcm = cm.r$pathContribution.Matrix,
               method = method,

@@ -1,5 +1,6 @@
 contribution.matrix <- function(x, method, model, hatmatrix.F1000,
                                 verbose = FALSE,
+                                studyContribution,
                                 pathContribution) {
   if (verbose)
     cat("Calculate network contributions (", model, " effects model):\n",
@@ -10,6 +11,7 @@ contribution.matrix <- function(x, method, model, hatmatrix.F1000,
   else if (method == "shortestpath")
     return(contribution.matrix.tpapak(x, model, hatmatrix.F1000,
                                       verbose = verbose,
+                                      studyContribution = studyContribution,
                                       pathContribution = pathContribution))
   else if (method == "cccp")
     return(contribution.matrix.ruecker.cccp(x, model, verbose = verbose))
@@ -25,6 +27,7 @@ contribution.matrix <- function(x, method, model, hatmatrix.F1000,
 
 contribution.matrix.tpapak <- function(x, model, hatmatrix.F1000,
                                        verbose = FALSE,
+                                       studyContribution,
                                        pathContribution
                                        ) {
   
@@ -167,13 +170,12 @@ contribution.matrix.tpapak <- function(x, model, hatmatrix.F1000,
                     nrow = dims[1], ncol = dims[2], byrow = TRUE)
   rownames(weights) <- rownames(H)
   colnames(weights) <- seq_len(dims[2])
+
   ##pathContribution matrix
   pathContribution.Matrix <- data.frame(comparison=NULL,
                                         path=NULL,
                                         contribution=NULL
                                         )
-  
-  
   is.tictoc <- is_installed_package("tictoc", stop = FALSE)
   ## rows of comparison matrix
   comparisons <- unlist(lapply(rownames(H), unlist))
@@ -189,13 +191,26 @@ contribution.matrix.tpapak <- function(x, model, hatmatrix.F1000,
   attr(weights, "model") <- model
   attr(weights, "hatmatrix.F1000") <- old
   ##
-  if(pathContribution==T){
-  res <- list(weights = weights
-             ,pathContribution.Matrix = pathContribution.Matrix)
+
+  ##studyContribution matrix
+  if(studyContribution==F){
+    studyContribution.Matrix <- NULL
   }else{
-  res <- list(weights = weights
-             ,pathContribution.Matrix = NULL)
+    studyContribution.Matrix <- 
+      lapply(comparisons,
+         function (comp){
+           scr <- getStudyContribution(x, weights, comp, model)
+           return(scr)
+         }
+     )
+    studyContribution.Matrix <- bind_rows(studyContribution.Matrix)
   }
+  if(pathContribution==F){
+    pathContribution.Matrix <- NULL
+  }
+  res <- list(weights = weights,
+             studyContribution.Matrix=studyContribution.Matrix,
+             pathContribution.Matrix = pathContribution.Matrix)
   res
 }
 

@@ -25,5 +25,6 @@ test_that("Path contributions of Placebo:Salmeterol comparison of Woods2010 sum 
   cm <- netcontrib(net1, pathContribution=T)
   #Path contributions of common effects model
   cpcm <- cm$common.pcm
+  print(cpcm)
   expect_equal(subset(cpcm,comparison=="Placebo:Salmeterol")$contribution %>% sum(),1)
 })
