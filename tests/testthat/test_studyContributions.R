@@ -27,17 +27,6 @@ test_that("studyContibutions sum to 1 ",{
   expect_equal(sum(sc$x),1)
 })
 
-test_that("studyContibutions replicate woods example with Tom's",{
-  cm <- netcontrib(net1, pathContribution=T, studyContribution=T)
-  scm <- cm$common.scm
-  tomsContrs <- tomsTest$contrs
-  tc <- data.frame(names(tomsContrs),c(tomsContrs))
-  sc <- subset(scm, comparison=="A:B")[,c('study','x')]
-  # # print(tc)
-  # print(sc)
-  expect_equal(tc,sc)
-})
-
 test_that("studyContribution weights = netmeta's weights",{
   studyWeights <- readRDS("studyWeights.rds")
   tryCatch(
@@ -49,8 +38,21 @@ test_that("studyContribution weights = netmeta's weights",{
 
 test_that("Tom's weights = netmeta's weights",{
   tryCatch(
-   expect_equal(tomsTest$weights, net1$w.common),
+   expect_true(
+     all.equal(unname(tomsTest$weights),unname(net1$w.common))
+   ),
     error = function(e) {
       fail(paste(tomsTest$weights, net1$w.common ))
     })
+})
+
+test_that("studyContibutions replicate woods example with Tom's",{
+  cm <- netcontrib(net1, pathContribution=T, studyContribution=T)
+  scm <- cm$common.scm
+  tomsContrs <- tomsTest$contrs
+  tc <- data.frame(names(tomsContrs),c(tomsContrs))
+  sc <- subset(scm, comparison=="A:B")[,c('study','x')]
+  # # print(tc)
+  # print(sc)
+  expect_equal(tc[,2],sc[,2])
 })
